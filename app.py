@@ -28,226 +28,328 @@ st.set_page_config(
 # CONFIGURATION
 # =========================================================
 
-GROQ_MODEL = st.secrets.get("GROQ_MODEL", "openai/gpt-oss-120b")
+GROQ_MODEL = st.secrets.get(
+    "GROQ_MODEL",
+    "openai/gpt-oss-120b"
+)
+
 EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 
 CHUNK_SIZE = 900
 CHUNK_OVERLAP = 150
+
 DEFAULT_TOP_K = 5
 
-MAX_PDF_MB = 25                 # protects memory under heavy usage
-EMBED_BATCH_SIZE = 64           # batched encoding, avoids OOM on big PDFs
-MAX_HISTORY = 12                # cap chat history kept in memory per session
+MAX_PDF_MB = 25
+EMBED_BATCH_SIZE = 64
+
+MAX_HISTORY = 12
+
 GROQ_MAX_RETRIES = 3
-GROQ_RETRY_BACKOFF = 1.6        # seconds, exponential
+GROQ_RETRY_BACKOFF = 1.6
 
 
 # =========================================================
-# THEME / CSS  (navy scheme)
+# CUSTOM CSS
 # =========================================================
 
 st.markdown(
     """
     <style>
 
-    :root {
-        --navy-900: #0a1a3c;
-        --navy-800: #0f234f;
-        --navy-700: #16305f;
-        --navy-600: #1e3f78;
-        --navy-500: #2d5ba3;
-        --accent: #3d7ee0;
-        --gold: #d4af37;
-        --bg-soft: #f4f7fb;
-        --text-soft: #5b6b82;
-    }
+    /* =====================================================
+       MAIN BACKGROUND
+       ===================================================== */
 
     .stApp {
-        background: linear-gradient(180deg, #f7f9fc 0%, #eef2f8 100%);
+        background: linear-gradient(
+            180deg,
+            #f7f9fc 0%,
+            #eef2f8 100%
+        );
     }
 
-    /* ---------- Force readable text everywhere (fixes dark-mode invisibility) ---------- */
-    .stApp, .stApp p, .stApp span, .stApp label,
-    .stApp h1, .stApp h2, .stApp h3, .stApp h4, .stApp h5, .stApp h6,
-    div[data-testid="stMarkdownContainer"],
-    div[data-testid="stMarkdownContainer"] p,
-    div[data-testid="stExpander"] summary,
-    div[data-testid="stExpander"] summary span,
-    div[data-testid="stTextInput"] label,
-    div[data-testid="stFileUploader"] label,
-    div[data-testid="stFileUploaderDropzoneInstructions"] span,
-    div[data-testid="stFileUploaderDropzoneInstructions"] div {
-        color: var(--navy-900) !important;
-    }
 
-    /* Hero + sidebar keep their own light text (declared further below / already white) */
-    .hero, .hero * {
-        color: #ffffff !important;
-    }
-    .hero-subtitle { color: #c6d3ea !important; }
-    .hero-badge { color: var(--gold) !important; }
+    /* =====================================================
+       HERO
+       ===================================================== */
 
-    section[data-testid="stSidebar"] * {
-        color: #e7ecf5 !important;
-    }
-
-    /* Metrics */
-    div[data-testid="stMetricLabel"] * {
-        color: var(--text-soft) !important;
-        font-weight: 600 !important;
-    }
-    div[data-testid="stMetricValue"] * {
-        color: var(--navy-900) !important;
-        font-weight: 800 !important;
-    }
-
-    /* Buttons keep white text regardless */
-    div.stButton > button, div.stButton > button * {
-        color: #ffffff !important;
-    }
-
-    /* Text input field itself (typed text + placeholder) */
-    div[data-testid="stTextInput"] input {
-        color: var(--navy-900) !important;
-        background: #ffffff !important;
-    }
-    div[data-testid="stTextInput"] input::placeholder {
-        color: #97a4b8 !important;
-    }
-
-    /* File uploader dropzone box */
-    div[data-testid="stFileUploaderDropzone"] {
-        background: #ffffff !important;
-        border: 1.5px dashed #b9c6dc !important;
-    }
-
-    /* ---------- Hero header ---------- */
     .hero {
-        background: linear-gradient(120deg, var(--navy-900) 0%, var(--navy-600) 100%);
+        background: linear-gradient(
+            120deg,
+            #0a1a3c 0%,
+            #1e3f78 100%
+        );
+
         border-radius: 18px;
-        padding: 38px 32px;
-        margin-bottom: 26px;
-        box-shadow: 0 10px 30px rgba(10, 26, 60, 0.25);
+
+        padding: 34px 32px;
+
+        margin-bottom: 25px;
+
+        box-shadow:
+            0 10px 30px rgba(10, 26, 60, 0.20);
+
         position: relative;
+
         overflow: hidden;
     }
-    .hero::after {
-        content: "";
-        position: absolute;
-        top: -60px; right: -60px;
-        width: 220px; height: 220px;
-        background: radial-gradient(circle, rgba(212,175,55,0.18) 0%, rgba(212,175,55,0) 70%);
-        border-radius: 50%;
-    }
+
     .hero-title {
-        color: #fff;
+        color: white;
+
         font-size: 36px;
+
         font-weight: 800;
+
         margin: 0;
-        letter-spacing: -0.5px;
-    }
-    .hero-subtitle {
-        color: #c6d3ea;
-        font-size: 15.5px;
-        margin-top: 8px;
-        font-weight: 400;
-    }
-    .hero-badge {
-        display: inline-block;
-        background: rgba(212,175,55,0.15);
-        color: var(--gold);
-        border: 1px solid rgba(212,175,55,0.4);
-        padding: 4px 12px;
-        border-radius: 999px;
-        font-size: 12px;
-        font-weight: 600;
-        letter-spacing: 0.4px;
-        margin-top: 14px;
     }
 
-    /* ---------- Cards ---------- */
-    .card {
-        background: #ffffff;
-        border-radius: 14px;
-        padding: 20px 22px;
-        border: 1px solid #e3e8f0;
-        box-shadow: 0 4px 14px rgba(10,26,60,0.05);
-        margin-bottom: 16px;
+    .hero-subtitle {
+        color: #d6e0f0;
+
+        font-size: 15px;
+
+        margin-top: 8px;
     }
+
+    .hero-badge {
+        display: inline-block;
+
+        margin-top: 15px;
+
+        padding: 5px 12px;
+
+        border-radius: 20px;
+
+        background: rgba(255,255,255,0.12);
+
+        border: 1px solid rgba(255,255,255,0.20);
+
+        color: #ffffff;
+
+        font-size: 12px;
+
+        font-weight: 600;
+    }
+
+
+    /* =====================================================
+       FILE UPLOADER
+       ===================================================== */
+
+    div[data-testid="stFileUploader"] {
+        background: #ffffff;
+
+        border: 2px dashed #2d5ba3;
+
+        border-radius: 14px;
+
+        padding: 12px;
+
+        box-shadow:
+            0 4px 14px rgba(10,26,60,0.06);
+    }
+
+    div[data-testid="stFileUploader"] section {
+        background: #ffffff !important;
+
+        border-radius: 10px;
+    }
+
+    div[data-testid="stFileUploader"] button {
+        background: #2d5ba3 !important;
+
+        color: white !important;
+
+        border: none !important;
+
+        border-radius: 8px !important;
+
+        font-weight: 600 !important;
+    }
+
+    div[data-testid="stFileUploader"] small {
+        color: #5b6b82 !important;
+    }
+
+
+    /* =====================================================
+       QUESTION INPUT
+       ===================================================== */
+
+    div[data-testid="stTextInput"] input {
+        background: #ffffff !important;
+
+        color: #0a1a3c !important;
+
+        border: 1px solid #cfd8e6 !important;
+
+        border-radius: 10px !important;
+
+        padding: 12px !important;
+    }
+
+    div[data-testid="stTextInput"] input:focus {
+        border: 2px solid #2d5ba3 !important;
+
+        box-shadow:
+            0 0 0 2px rgba(45,91,163,0.10) !important;
+    }
+
+
+    /* =====================================================
+       BUTTONS
+       ===================================================== */
+
+    div.stButton > button {
+        background: linear-gradient(
+            120deg,
+            #16305f,
+            #2d5ba3
+        );
+
+        color: white;
+
+        border: none;
+
+        border-radius: 10px;
+
+        padding: 10px 18px;
+
+        font-weight: 700;
+
+        box-shadow:
+            0 4px 12px rgba(45,91,163,0.25);
+    }
+
+    div.stButton > button:hover {
+        background: linear-gradient(
+            120deg,
+            #1e3f78,
+            #3d7ee0
+        );
+
+        color: white;
+    }
+
+
+    /* =====================================================
+       METRICS
+       ===================================================== */
+
+    div[data-testid="stMetric"] {
+        background: #ffffff;
+
+        border: 1px solid #e1e7f0;
+
+        border-radius: 12px;
+
+        padding: 14px;
+
+        box-shadow:
+            0 3px 10px rgba(10,26,60,0.05);
+    }
+
+
+    /* =====================================================
+       ANSWER CARD
+       ===================================================== */
 
     .answer-card {
         background: #ffffff;
-        border-left: 5px solid var(--navy-600);
+
+        border-left: 5px solid #1e3f78;
+
         border-radius: 12px;
-        padding: 22px 24px;
-        box-shadow: 0 6px 18px rgba(10,26,60,0.08);
+
+        padding: 20px 22px;
+
+        color: #0a1a3c;
+
+        box-shadow:
+            0 6px 18px rgba(10,26,60,0.08);
+
+        line-height: 1.7;
     }
 
-    .context-chip {
-        display: inline-block;
-        background: var(--navy-800);
-        color: #fff;
-        padding: 2px 10px;
-        border-radius: 6px;
-        font-size: 12px;
-        font-weight: 600;
-        margin-right: 8px;
-    }
 
-    .score-chip {
-        display: inline-block;
-        background: var(--bg-soft);
-        color: var(--navy-700);
-        border: 1px solid #d6dfec;
-        padding: 2px 10px;
-        border-radius: 6px;
-        font-size: 12px;
-        font-weight: 600;
-    }
+    /* =====================================================
+       SIDEBAR
+       ===================================================== */
 
-    /* ---------- Sidebar ---------- */
     section[data-testid="stSidebar"] {
-        background: linear-gradient(180deg, var(--navy-900) 0%, var(--navy-800) 100%);
+        background: linear-gradient(
+            180deg,
+            #0a1a3c 0%,
+            #0f234f 100%
+        );
     }
+
     section[data-testid="stSidebar"] * {
         color: #e7ecf5 !important;
     }
+
     section[data-testid="stSidebar"] hr {
         border-color: rgba(255,255,255,0.15);
     }
 
-    /* ---------- Buttons ---------- */
-    div.stButton > button {
-        background: linear-gradient(120deg, var(--navy-600), var(--accent));
-        color: #fff;
-        border: none;
-        border-radius: 10px;
-        padding: 10px 18px;
-        font-weight: 700;
-        letter-spacing: 0.2px;
-        transition: transform 0.12s ease, box-shadow 0.12s ease;
-        box-shadow: 0 4px 12px rgba(45,91,163,0.35);
-    }
-    div.stButton > button:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 6px 18px rgba(45,91,163,0.45);
+
+    /* =====================================================
+       CONTEXT CHIPS
+       ===================================================== */
+
+    .context-chip {
+        display: inline-block;
+
+        background: #16305f;
+
+        color: white;
+
+        padding: 4px 10px;
+
+        border-radius: 6px;
+
+        font-size: 12px;
+
+        font-weight: 600;
+
+        margin-right: 6px;
     }
 
-    /* ---------- Metrics ---------- */
-    div[data-testid="stMetric"] {
-        background: #ffffff;
-        border: 1px solid #e3e8f0;
-        border-radius: 12px;
-        padding: 14px 10px;
-        box-shadow: 0 3px 10px rgba(10,26,60,0.05);
+    .score-chip {
+        display: inline-block;
+
+        background: #eef2f8;
+
+        color: #16305f;
+
+        border: 1px solid #d6dfec;
+
+        padding: 4px 10px;
+
+        border-radius: 6px;
+
+        font-size: 12px;
+
+        font-weight: 600;
     }
 
-    /* ---------- Misc ---------- */
+
+    /* =====================================================
+       FOOTER
+       ===================================================== */
+
     .footer-note {
         text-align: center;
-        color: var(--text-soft);
-        font-size: 12.5px;
-        margin-top: 34px;
+
+        color: #6b7a90;
+
+        font-size: 12px;
+
+        margin-top: 35px;
+
+        margin-bottom: 15px;
     }
 
     </style>
@@ -263,9 +365,20 @@ st.markdown(
 st.markdown(
     """
     <div class="hero">
-        <div class="hero-title">🏢 HR Policy Assistant</div>
-        <div class="hero-subtitle">Upload an HR policy PDF and get instant, grounded answers — powered by RAG.</div>
-        <div class="hero-badge">⚡ Optimized for high-traffic use</div>
+
+        <div class="hero-title">
+            🏢 HR Policy Assistant
+        </div>
+
+        <div class="hero-subtitle">
+            Upload an HR policy PDF and get instant,
+            document-based answers using RAG.
+        </div>
+
+        <div class="hero-badge">
+            ⚡ AI-Powered Document Assistant
+        </div>
+
     </div>
     """,
     unsafe_allow_html=True
@@ -277,30 +390,43 @@ st.markdown(
 # =========================================================
 
 try:
-    GROQ_API_KEY = st.secrets["GROQ_API_KEY"]
+
+    GROQ_API_KEY = st.secrets[
+        "GROQ_API_KEY"
+    ]
+
 except Exception:
+
     st.error(
         "GROQ_API_KEY is missing. "
         "Please add it in Streamlit Cloud → Settings → Secrets."
     )
+
     st.stop()
 
 
 @st.cache_resource
 def get_groq_client():
-    return Groq(api_key=GROQ_API_KEY)
+
+    return Groq(
+        api_key=GROQ_API_KEY
+    )
 
 
 client = get_groq_client()
 
 
 # =========================================================
-# LOAD EMBEDDING MODEL (shared across all sessions/users)
+# EMBEDDING MODEL
 # =========================================================
 
 @st.cache_resource
 def load_embedding_model():
-    model = SentenceTransformer(EMBEDDING_MODEL)
+
+    model = SentenceTransformer(
+        EMBEDDING_MODEL
+    )
+
     return model
 
 
@@ -308,24 +434,46 @@ embedding_model = load_embedding_model()
 
 
 # =========================================================
-# EXTRACT TEXT FROM PDF USING PYMUPDF
+# EXTRACT TEXT FROM PDF
 # =========================================================
 
 def extract_pdf_text(uploaded_file):
-    pdf_bytes = uploaded_file.getvalue()
-    pdf_file = io.BytesIO(pdf_bytes)
 
-    document = open_pdf(stream=pdf_file.read(), filetype="pdf")
+    pdf_bytes = uploaded_file.getvalue()
+
+    pdf_file = io.BytesIO(
+        pdf_bytes
+    )
+
+    document = open_pdf(
+        stream=pdf_file.read(),
+        filetype="pdf"
+    )
 
     pages = []
-    for page_number, page in enumerate(document, start=1):
+
+    for page_number, page in enumerate(
+        document,
+        start=1
+    ):
+
         text = page.get_text()
+
         if text:
+
             text = text.strip()
+
             if text:
-                pages.append({"page": page_number, "text": text})
+
+                pages.append(
+                    {
+                        "page": page_number,
+                        "text": text
+                    }
+                )
 
     document.close()
+
     return pages
 
 
@@ -334,7 +482,13 @@ def extract_pdf_text(uploaded_file):
 # =========================================================
 
 def clean_text(text):
-    text = re.sub(r"\s+", " ", text)
+
+    text = re.sub(
+        r"\s+",
+        " ",
+        text
+    )
+
     return text.strip()
 
 
@@ -342,22 +496,43 @@ def clean_text(text):
 # CREATE CHUNKS
 # =========================================================
 
-def create_chunks(pages, chunk_size=CHUNK_SIZE, overlap=CHUNK_OVERLAP):
+def create_chunks(
+    pages,
+    chunk_size=CHUNK_SIZE,
+    overlap=CHUNK_OVERLAP
+):
+
     chunks = []
 
     for page_data in pages:
+
         page_number = page_data["page"]
-        text = clean_text(page_data["text"])
+
+        text = clean_text(
+            page_data["text"]
+        )
 
         start = 0
+
         while start < len(text):
+
             end = start + chunk_size
-            chunk_text = text[start:end].strip()
+
+            chunk_text = text[
+                start:end
+            ].strip()
 
             if chunk_text:
-                chunks.append({"text": chunk_text, "page": page_number})
+
+                chunks.append(
+                    {
+                        "text": chunk_text,
+                        "page": page_number
+                    }
+                )
 
             if end >= len(text):
+
                 break
 
             start = end - overlap
@@ -366,17 +541,32 @@ def create_chunks(pages, chunk_size=CHUNK_SIZE, overlap=CHUNK_OVERLAP):
 
 
 # =========================================================
-# CREATE EMBEDDINGS + FAISS VECTOR DATABASE (batched -> heavy usage safe)
+# CREATE FAISS INDEX
 # =========================================================
 
-def create_faiss_index(chunks, progress_callback=None):
-    texts = [chunk["text"] for chunk in chunks]
+def create_faiss_index(
+    chunks,
+    progress_callback=None
+):
+
+    texts = [
+        chunk["text"]
+        for chunk in chunks
+    ]
 
     all_embeddings = []
+
     total = len(texts)
 
-    for start in range(0, total, EMBED_BATCH_SIZE):
-        batch = texts[start:start + EMBED_BATCH_SIZE]
+    for start in range(
+        0,
+        total,
+        EMBED_BATCH_SIZE
+    ):
+
+        batch = texts[
+            start:start + EMBED_BATCH_SIZE
+        ]
 
         batch_embeddings = embedding_model.encode(
             batch,
@@ -385,17 +575,34 @@ def create_faiss_index(chunks, progress_callback=None):
             show_progress_bar=False
         )
 
-        all_embeddings.append(batch_embeddings)
+        all_embeddings.append(
+            batch_embeddings
+        )
 
         if progress_callback:
-            done = min(start + EMBED_BATCH_SIZE, total)
-            progress_callback(done / total)
 
-    embeddings = np.vstack(all_embeddings).astype("float32")
+            done = min(
+                start + EMBED_BATCH_SIZE,
+                total
+            )
+
+            progress_callback(
+                done / total
+            )
+
+    embeddings = np.vstack(
+        all_embeddings
+    ).astype("float32")
 
     dimension = embeddings.shape[1]
-    index = faiss.IndexFlatIP(dimension)
-    index.add(embeddings)
+
+    index = faiss.IndexFlatIP(
+        dimension
+    )
+
+    index.add(
+        embeddings
+    )
 
     return index
 
@@ -404,62 +611,102 @@ def create_faiss_index(chunks, progress_callback=None):
 # RETRIEVE RELEVANT CHUNKS
 # =========================================================
 
-def retrieve_chunks(question, index, chunks, top_k=DEFAULT_TOP_K):
+def retrieve_chunks(
+    question,
+    index,
+    chunks,
+    top_k=DEFAULT_TOP_K
+):
+
     question_embedding = embedding_model.encode(
         [question],
         convert_to_numpy=True,
         normalize_embeddings=True
     )
-    question_embedding = question_embedding.astype("float32")
 
-    k = min(top_k, len(chunks))
-    scores, indices = index.search(question_embedding, k)
+    question_embedding = question_embedding.astype(
+        "float32"
+    )
+
+    k = min(
+        top_k,
+        len(chunks)
+    )
+
+    scores, indices = index.search(
+        question_embedding,
+        k
+    )
 
     retrieved_chunks = []
-    for score, index_number in zip(scores[0], indices[0]):
+
+    for score, index_number in zip(
+        scores[0],
+        indices[0]
+    ):
+
         if index_number == -1:
+
             continue
 
-        retrieved_chunks.append({
-            "text": chunks[index_number]["text"],
-            "page": chunks[index_number]["page"],
-            "score": float(score)
-        })
+        retrieved_chunks.append(
+            {
+                "text":
+                    chunks[index_number]["text"],
+
+                "page":
+                    chunks[index_number]["page"],
+
+                "score":
+                    float(score)
+            }
+        )
 
     return retrieved_chunks
 
 
 # =========================================================
-# GENERATE ANSWER USING GROQ (with retry/backoff -> heavy usage safe)
+# GENERATE ANSWER
 # =========================================================
 
-def generate_answer(question, retrieved_chunks):
-    context_parts = []
-    for chunk in retrieved_chunks:
-        context_parts.append(f"[Page {chunk['page']}]\n{chunk['text']}")
+def generate_answer(
+    question,
+    retrieved_chunks
+):
 
-    context = "\n\n".join(context_parts)
+    context_parts = []
+
+    for chunk in retrieved_chunks:
+
+        context_parts.append(
+            f"[Page {chunk['page']}]\n"
+            f"{chunk['text']}"
+        )
+
+    context = "\n\n".join(
+        context_parts
+    )
 
     prompt = f"""
 You are an HR Policy Assistant.
 
-Answer the user's question using ONLY the
-information provided in the retrieved HR Policy PDF context.
+Answer the user's question using ONLY
+the information provided in the retrieved
+HR Policy PDF context.
 
 Rules:
 
 1. Do not use outside knowledge.
 2. Do not invent HR policies.
 3. If the answer is not present in the PDF,
-   say:
+say:
 
-   "I could not find this information in the uploaded HR policy."
+"I could not find this information in the uploaded HR policy."
 
 4. Give a clear and simple answer.
 5. Mention the relevant page number when possible.
-6. If multiple retrieved sections are relevant,
-   combine them carefully.
-7. Do not assume a policy that is not written in the PDF.
+6. Combine multiple relevant sections carefully.
+7. Never assume a policy that is not written in the PDF.
 
 Retrieved HR Policy Context:
 --------------------------------
@@ -475,48 +722,91 @@ User Question:
 
     last_error = None
 
-    for attempt in range(1, GROQ_MAX_RETRIES + 1):
+    for attempt in range(
+        1,
+        GROQ_MAX_RETRIES + 1
+    ):
+
         try:
+
             response = client.chat.completions.create(
+
                 model=GROQ_MODEL,
+
                 messages=[
+
                     {
                         "role": "system",
-                        "content": "You answer HR policy questions using only the retrieved document context."
+                        "content":
+                        "You answer HR policy questions using only the retrieved document context."
                     },
+
                     {
                         "role": "user",
                         "content": prompt
                     }
+
                 ],
+
                 temperature=0.2,
+
                 max_tokens=2000,
+
                 reasoning_effort="medium"
             )
-            return response.choices[0].message.content
+
+            return response.choices[
+                0
+            ].message.content
+
 
         except RateLimitError as e:
-            last_error = e
-            time.sleep(GROQ_RETRY_BACKOFF ** attempt)
 
-        except (APIConnectionError, APIError) as e:
             last_error = e
-            time.sleep(GROQ_RETRY_BACKOFF ** attempt)
+
+            time.sleep(
+                GROQ_RETRY_BACKOFF ** attempt
+            )
+
+
+        except (
+            APIConnectionError,
+            APIError
+        ) as e:
+
+            last_error = e
+
+            time.sleep(
+                GROQ_RETRY_BACKOFF ** attempt
+            )
+
 
     return (
-        "⚠️ The assistant is under heavy load right now and couldn't get a "
-        f"response after {GROQ_MAX_RETRIES} attempts. Please try again in a "
-        f"moment.\n\n_Technical detail: {last_error}_"
+        "⚠️ The assistant is temporarily "
+        "under heavy load. Please try again "
+        "in a moment."
     )
 
 
 # =========================================================
-# SIMPLE PER-SESSION ANSWER CACHE (avoids re-billing identical questions)
+# CACHE KEY
 # =========================================================
 
-def get_cache_key(file_name, question, top_k):
-    raw = f"{file_name}|{question.strip().lower()}|{top_k}"
-    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+def get_cache_key(
+    file_name,
+    question,
+    top_k
+):
+
+    raw = (
+        f"{file_name}|"
+        f"{question.strip().lower()}|"
+        f"{top_k}"
+    )
+
+    return hashlib.sha256(
+        raw.encode("utf-8")
+    ).hexdigest()
 
 
 # =========================================================
@@ -525,44 +815,81 @@ def get_cache_key(file_name, question, top_k):
 
 with st.sidebar:
 
-    st.markdown("## ⚙️ RAG Settings")
+    st.markdown(
+        "## ⚙️ RAG Settings"
+    )
 
     top_k = st.slider(
-        "Number of retrieved chunks",
+        "Retrieved chunks",
         min_value=1,
         max_value=10,
         value=DEFAULT_TOP_K
     )
 
     st.markdown("---")
-    st.markdown("### 🔧 Technologies")
+
+    st.markdown(
+        "### 🔧 Technologies"
+    )
+
     st.markdown(
         """
-        - 📄 **PDF Extraction:** PyMuPDF
-        - ✂️ **Chunking:** Custom text chunking
-        - 🧠 **Embeddings:** Sentence Transformers
-        - 🗄️ **Vector Database:** FAISS
-        - 🤖 **LLM:** Groq
+        📄 **PDF:** PyMuPDF
+
+        ✂️ **Chunking:** Custom
+
+        🧠 **Embeddings:** Sentence Transformers
+
+        🗄️ **Vector DB:** FAISS
+
+        🤖 **LLM:** Groq
         """
     )
 
     st.markdown("---")
-    st.markdown("### ⚡ Heavy-Usage Safeguards")
+
+    st.markdown(
+        "### ⚡ Performance"
+    )
+
     st.markdown(
         f"""
-        - Batched embeddings ({EMBED_BATCH_SIZE}/batch)
-        - Cached embedding model & Groq client
-        - Retry + backoff on Groq errors ({GROQ_MAX_RETRIES}x)
-        - Per-question answer cache (this session)
-        - Max PDF size: {MAX_PDF_MB} MB
+        • Batched embeddings: {EMBED_BATCH_SIZE}
+
+        • Cached AI resources
+
+        • API retry protection
+
+        • Session answer cache
+
+        • PDF limit: {MAX_PDF_MB} MB
         """
     )
 
-    if st.session_state.get("processed_file"):
+    if st.session_state.get(
+        "processed_file"
+    ):
+
         st.markdown("---")
-        if st.button("🗑️ Reset session"):
-            for key in ["processed_file", "pages", "chunks", "index", "answer_cache", "chat_history"]:
-                st.session_state.pop(key, None)
+
+        if st.button(
+            "🗑️ Reset Session"
+        ):
+
+            for key in [
+                "processed_file",
+                "pages",
+                "chunks",
+                "index",
+                "answer_cache",
+                "chat_history"
+            ]:
+
+                st.session_state.pop(
+                    key,
+                    None
+                )
+
             st.rerun()
 
 
@@ -570,194 +897,476 @@ with st.sidebar:
 # PDF UPLOAD
 # =========================================================
 
-st.markdown('<div class="card">', unsafe_allow_html=True)
-
-uploaded_file = st.file_uploader(
-    "📄 Upload HR Policy PDF",
-    type=["pdf"]
+st.subheader(
+    "📄 Upload HR Policy PDF"
 )
 
-st.markdown('</div>', unsafe_allow_html=True)
+uploaded_file = st.file_uploader(
+    "Choose an HR Policy PDF",
+    type=["pdf"],
+    help="Upload a text-based HR policy PDF."
+)
 
+
+# =========================================================
+# IF PDF EXISTS
+# =========================================================
 
 if uploaded_file is not None:
 
-    file_size_mb = len(uploaded_file.getvalue()) / (1024 * 1024)
+    file_size_mb = (
+        len(
+            uploaded_file.getvalue()
+        )
+        /
+        (1024 * 1024)
+    )
 
     if file_size_mb > MAX_PDF_MB:
+
         st.error(
-            f"This PDF is {file_size_mb:.1f} MB, which exceeds the "
-            f"{MAX_PDF_MB} MB limit for reliable processing under heavy load. "
-            "Please upload a smaller file."
+            f"PDF size is {file_size_mb:.1f} MB. "
+            f"Maximum allowed size is {MAX_PDF_MB} MB."
         )
+
         st.stop()
 
-    st.success(f"✅ Uploaded: **{uploaded_file.name}** ({file_size_mb:.1f} MB)")
+
+    st.success(
+        f"✅ {uploaded_file.name} uploaded successfully"
+    )
+
 
     # =====================================================
     # PROCESS PDF
     # =====================================================
 
     if (
-        "processed_file" not in st.session_state
-        or st.session_state["processed_file"] != uploaded_file.name
+        "processed_file"
+        not in st.session_state
+
+        or
+
+        st.session_state[
+            "processed_file"
+        ]
+        != uploaded_file.name
     ):
 
-        status = st.empty()
-        progress_bar = st.progress(0, text="Extracting text from PDF...")
+        progress_bar = st.progress(
+            0,
+            text="Extracting PDF text..."
+        )
 
-        # STEP 1: Extract text
-        pages = extract_pdf_text(uploaded_file)
+
+        # -------------------------------------------------
+        # STEP 1
+        # -------------------------------------------------
+
+        pages = extract_pdf_text(
+            uploaded_file
+        )
 
         if not pages:
-            st.error("No readable text was found in this PDF.")
+
+            st.error(
+                "No readable text was found in this PDF."
+            )
+
             st.stop()
 
-        progress_bar.progress(20, text="Splitting into chunks...")
 
-        # STEP 2: Create chunks
-        chunks = create_chunks(pages)
+        progress_bar.progress(
+            20,
+            text="Creating text chunks..."
+        )
+
+
+        # -------------------------------------------------
+        # STEP 2
+        # -------------------------------------------------
+
+        chunks = create_chunks(
+            pages
+        )
 
         if not chunks:
-            st.error("Could not create text chunks.")
+
+            st.error(
+                "Could not create text chunks."
+            )
+
             st.stop()
 
-        progress_bar.progress(35, text="Generating embeddings...")
 
-        # STEP 3: Create embeddings + FAISS (batched, with live progress)
-        def _update_progress(fraction):
-            pct = 35 + int(fraction * 60)
-            progress_bar.progress(min(pct, 95), text=f"Generating embeddings... {int(fraction * 100)}%")
+        progress_bar.progress(
+            35,
+            text="Generating embeddings..."
+        )
 
-        index = create_faiss_index(chunks, progress_callback=_update_progress)
 
-        progress_bar.progress(100, text="Done!")
-        time.sleep(0.3)
+        # -------------------------------------------------
+        # STEP 3
+        # -------------------------------------------------
+
+        def update_progress(
+            fraction
+        ):
+
+            percent = 35 + int(
+                fraction * 60
+            )
+
+            progress_bar.progress(
+                min(percent, 95),
+                text=
+                f"Generating embeddings... "
+                f"{int(fraction * 100)}%"
+            )
+
+
+        index = create_faiss_index(
+            chunks,
+            progress_callback=
+            update_progress
+        )
+
+
+        progress_bar.progress(
+            100,
+            text="PDF processing complete!"
+        )
+
+        time.sleep(
+            0.3
+        )
+
         progress_bar.empty()
 
-        # Save data
-        st.session_state["processed_file"] = uploaded_file.name
-        st.session_state["pages"] = pages
-        st.session_state["chunks"] = chunks
-        st.session_state["index"] = index
-        st.session_state["answer_cache"] = {}
-        st.session_state["chat_history"] = []
 
-        st.success("🎉 HR Policy PDF processed successfully!")
+        # -------------------------------------------------
+        # SAVE DATA
+        # -------------------------------------------------
+
+        st.session_state[
+            "processed_file"
+        ] = uploaded_file.name
+
+        st.session_state[
+            "pages"
+        ] = pages
+
+        st.session_state[
+            "chunks"
+        ] = chunks
+
+        st.session_state[
+            "index"
+        ] = index
+
+        st.session_state[
+            "answer_cache"
+        ] = {}
+
+        st.session_state[
+            "chat_history"
+        ] = []
+
+
+        st.success(
+            "🎉 HR Policy PDF processed successfully!"
+        )
+
 
     # =====================================================
-    # LOAD PROCESSED DATA
+    # LOAD DATA
     # =====================================================
 
-    pages = st.session_state["pages"]
-    chunks = st.session_state["chunks"]
-    index = st.session_state["index"]
-    st.session_state.setdefault("answer_cache", {})
-    st.session_state.setdefault("chat_history", [])
+    pages = st.session_state[
+        "pages"
+    ]
+
+    chunks = st.session_state[
+        "chunks"
+    ]
+
+    index = st.session_state[
+        "index"
+    ]
+
+
+    st.session_state.setdefault(
+        "answer_cache",
+        {}
+    )
+
+    st.session_state.setdefault(
+        "chat_history",
+        []
+    )
+
 
     # =====================================================
     # DOCUMENT INFORMATION
     # =====================================================
 
+    st.markdown(
+        "### 📊 Document Information"
+    )
+
     col1, col2, col3 = st.columns(3)
 
+
     with col1:
-        st.metric("📄 PDF Pages", len(pages))
+
+        st.metric(
+            "📄 PDF Pages",
+            len(pages)
+        )
+
+
     with col2:
-        st.metric("✂️ Text Chunks", len(chunks))
+
+        st.metric(
+            "✂️ Text Chunks",
+            len(chunks)
+        )
+
+
     with col3:
-        st.metric("📐 Vector Dimension", index.d)
+
+        st.metric(
+            "📐 Vector Dimension",
+            index.d
+        )
+
 
     st.divider()
 
+
     # =====================================================
-    # QUESTION SECTION
+    # QUESTION
     # =====================================================
 
-    st.markdown('<div class="card">', unsafe_allow_html=True)
-    st.subheader("💬 Ask an HR Policy Question")
+    st.subheader(
+        "💬 Ask an HR Policy Question"
+    )
 
     question = st.text_input(
         "Enter your question",
-        placeholder="Example: How many annual leaves are allowed?"
+        placeholder=
+        "Example: How many annual leaves are allowed?"
     )
 
-    ask_clicked = st.button("🔎 Search & Answer", type="primary")
-    st.markdown('</div>', unsafe_allow_html=True)
+
+    ask_clicked = st.button(
+        "🔎 Search & Answer",
+        type="primary"
+    )
+
 
     # =====================================================
-    # SEARCH + ANSWER
+    # ANSWER
     # =====================================================
 
     if ask_clicked:
 
         if not question.strip():
-            st.warning("Please enter a question.")
+
+            st.warning(
+                "Please enter a question."
+            )
+
 
         else:
-            cache_key = get_cache_key(uploaded_file.name, question, top_k)
-            cached = st.session_state["answer_cache"].get(cache_key)
+
+            cache_key = get_cache_key(
+                uploaded_file.name,
+                question,
+                top_k
+            )
+
+
+            cached = st.session_state[
+                "answer_cache"
+            ].get(
+                cache_key
+            )
+
 
             if cached:
-                retrieved_chunks = cached["retrieved_chunks"]
-                answer = cached["answer"]
-                st.info("⚡ Served from this session's cache — instant, no extra API cost.")
+
+                retrieved_chunks = cached[
+                    "retrieved_chunks"
+                ]
+
+                answer = cached[
+                    "answer"
+                ]
+
+                st.info(
+                    "⚡ Answer loaded from session cache."
+                )
+
 
             else:
-                with st.spinner("Searching relevant HR policy information..."):
-                    retrieved_chunks = retrieve_chunks(question, index, chunks, top_k)
 
-                with st.spinner("Generating answer..."):
-                    answer = generate_answer(question, retrieved_chunks)
+                with st.spinner(
+                    "🔍 Searching HR policy..."
+                ):
 
-                st.session_state["answer_cache"][cache_key] = {
-                    "retrieved_chunks": retrieved_chunks,
-                    "answer": answer
+                    retrieved_chunks = retrieve_chunks(
+                        question,
+                        index,
+                        chunks,
+                        top_k
+                    )
+
+
+                with st.spinner(
+                    "🤖 Generating answer..."
+                ):
+
+                    answer = generate_answer(
+                        question,
+                        retrieved_chunks
+                    )
+
+
+                st.session_state[
+                    "answer_cache"
+                ][cache_key] = {
+
+                    "retrieved_chunks":
+                        retrieved_chunks,
+
+                    "answer":
+                        answer
                 }
 
-            # Track light chat history (capped)
-            st.session_state["chat_history"].append({"q": question, "a": answer})
-            st.session_state["chat_history"] = st.session_state["chat_history"][-MAX_HISTORY:]
+
+            # ------------------------------------------------
+            # HISTORY
+            # ------------------------------------------------
+
+            st.session_state[
+                "chat_history"
+            ].append(
+                {
+                    "q": question,
+                    "a": answer
+                }
+            )
+
+
+            st.session_state[
+                "chat_history"
+            ] = st.session_state[
+                "chat_history"
+            ][-MAX_HISTORY:]
+
 
             # ------------------------------------------------
             # DISPLAY ANSWER
             # ------------------------------------------------
 
-            st.markdown("### 🤖 Answer")
-            st.markdown(f'<div class="answer-card">{answer}</div>', unsafe_allow_html=True)
+            st.markdown(
+                "### 🤖 Answer"
+            )
+
+            st.markdown(
+                f"""
+                <div class="answer-card">
+                    {answer}
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+
 
             # ------------------------------------------------
             # RETRIEVED CONTEXT
             # ------------------------------------------------
 
-            with st.expander("🔍 View Retrieved HR Policy Context", expanded=False):
+            with st.expander(
+                "🔍 View Retrieved HR Policy Context"
+            ):
 
-                for number, chunk in enumerate(retrieved_chunks, start=1):
+                for number, chunk in enumerate(
+                    retrieved_chunks,
+                    start=1
+                ):
+
                     st.markdown(
-                        f'<span class="context-chip">Result {number}</span> '
-                        f'<span class="context-chip">Page {chunk["page"]}</span> '
-                        f'<span class="score-chip">Similarity {chunk["score"]:.3f}</span>',
+                        f"""
+                        <span class="context-chip">
+                            Result {number}
+                        </span>
+
+                        <span class="context-chip">
+                            Page {chunk['page']}
+                        </span>
+
+                        <span class="score-chip">
+                            Similarity {chunk['score']:.3f}
+                        </span>
+                        """,
                         unsafe_allow_html=True
                     )
-                    st.write(chunk["text"])
+
+                    st.write(
+                        chunk["text"]
+                    )
+
                     st.divider()
 
+
     # =====================================================
-    # RECENT QUESTIONS (session chat history)
+    # RECENT QUESTIONS
     # =====================================================
 
-    if st.session_state["chat_history"]:
-        with st.expander(f"🕒 Recent questions this session ({len(st.session_state['chat_history'])})"):
-            for item in reversed(st.session_state["chat_history"]):
-                st.markdown(f"**Q:** {item['q']}")
-                st.markdown(f"**A:** {item['a']}")
+    if st.session_state[
+        "chat_history"
+    ]:
+
+        with st.expander(
+            f"🕒 Recent Questions "
+            f"({len(st.session_state['chat_history'])})"
+        ):
+
+            for item in reversed(
+                st.session_state[
+                    "chat_history"
+                ]
+            ):
+
+                st.markdown(
+                    f"**Q:** {item['q']}"
+                )
+
+                st.markdown(
+                    f"**A:** {item['a']}"
+                )
+
                 st.divider()
 
-else:
-    st.info("📄 Upload an HR Policy PDF to start.")
 
+else:
+
+    st.info(
+        "📄 Upload an HR Policy PDF above to start."
+    )
+
+
+# =========================================================
+# FOOTER
+# =========================================================
 
 st.markdown(
-    '<div class="footer-note">Built with Streamlit · FAISS · Sentence Transformers · Groq</div>',
+    """
+    <div class="footer-note">
+        Built with Streamlit · FAISS · Sentence Transformers · Groq
+    </div>
+    """,
     unsafe_allow_html=True
 )
