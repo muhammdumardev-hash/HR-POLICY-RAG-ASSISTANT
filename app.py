@@ -66,6 +66,61 @@ st.markdown(
         background: linear-gradient(180deg, #f7f9fc 0%, #eef2f8 100%);
     }
 
+    /* ---------- Force readable text everywhere (fixes dark-mode invisibility) ---------- */
+    .stApp, .stApp p, .stApp span, .stApp label,
+    .stApp h1, .stApp h2, .stApp h3, .stApp h4, .stApp h5, .stApp h6,
+    div[data-testid="stMarkdownContainer"],
+    div[data-testid="stMarkdownContainer"] p,
+    div[data-testid="stExpander"] summary,
+    div[data-testid="stExpander"] summary span,
+    div[data-testid="stTextInput"] label,
+    div[data-testid="stFileUploader"] label,
+    div[data-testid="stFileUploaderDropzoneInstructions"] span,
+    div[data-testid="stFileUploaderDropzoneInstructions"] div {
+        color: var(--navy-900) !important;
+    }
+
+    /* Hero + sidebar keep their own light text (declared further below / already white) */
+    .hero, .hero * {
+        color: #ffffff !important;
+    }
+    .hero-subtitle { color: #c6d3ea !important; }
+    .hero-badge { color: var(--gold) !important; }
+
+    section[data-testid="stSidebar"] * {
+        color: #e7ecf5 !important;
+    }
+
+    /* Metrics */
+    div[data-testid="stMetricLabel"] * {
+        color: var(--text-soft) !important;
+        font-weight: 600 !important;
+    }
+    div[data-testid="stMetricValue"] * {
+        color: var(--navy-900) !important;
+        font-weight: 800 !important;
+    }
+
+    /* Buttons keep white text regardless */
+    div.stButton > button, div.stButton > button * {
+        color: #ffffff !important;
+    }
+
+    /* Text input field itself (typed text + placeholder) */
+    div[data-testid="stTextInput"] input {
+        color: var(--navy-900) !important;
+        background: #ffffff !important;
+    }
+    div[data-testid="stTextInput"] input::placeholder {
+        color: #97a4b8 !important;
+    }
+
+    /* File uploader dropzone box */
+    div[data-testid="stFileUploaderDropzone"] {
+        background: #ffffff !important;
+        border: 1.5px dashed #b9c6dc !important;
+    }
+
     /* ---------- Hero header ---------- */
     .hero {
         background: linear-gradient(120deg, var(--navy-900) 0%, var(--navy-600) 100%);
