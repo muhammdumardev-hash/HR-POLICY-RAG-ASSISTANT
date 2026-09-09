@@ -226,6 +226,15 @@ st.markdown(
         color: var(--navy-700) !important;
     }
 
+    /* ---------- Bordered containers (replaces manual .card div hack) ---------- */
+    div[data-testid="stVerticalBlockBorderWrapper"] {
+        background: #ffffff !important;
+        border-radius: 14px !important;
+        border: 1px solid #e3e8f0 !important;
+        box-shadow: 0 4px 14px rgba(10,26,60,0.05);
+        margin-bottom: 16px;
+    }
+
     /* ---------- Metrics ---------- */
     div[data-testid="stMetric"] {
         background: #ffffff;
@@ -590,14 +599,11 @@ with st.sidebar:
 # PDF UPLOAD
 # =========================================================
 
-st.markdown('<div class="card">', unsafe_allow_html=True)
-
-uploaded_file = st.file_uploader(
-    "📄 Upload HR Policy PDF",
-    type=["pdf"]
-)
-
-st.markdown('</div>', unsafe_allow_html=True)
+with st.container(border=True):
+    uploaded_file = st.file_uploader(
+        "📄 Upload HR Policy PDF",
+        type=["pdf"]
+    )
 
 
 if uploaded_file is not None:
@@ -694,16 +700,15 @@ if uploaded_file is not None:
     # QUESTION SECTION
     # =====================================================
 
-    st.markdown('<div class="card">', unsafe_allow_html=True)
-    st.subheader("💬 Ask an HR Policy Question")
+    with st.container(border=True):
+        st.subheader("💬 Ask an HR Policy Question")
 
-    question = st.text_input(
-        "Enter your question",
-        placeholder="Example: How many annual leaves are allowed?"
-    )
+        question = st.text_input(
+            "Enter your question",
+            placeholder="Example: How many annual leaves are allowed?"
+        )
 
-    ask_clicked = st.button("🔎 Search & Answer", type="primary")
-    st.markdown('</div>', unsafe_allow_html=True)
+        ask_clicked = st.button("🔎 Search & Answer", type="primary")
 
     # =====================================================
     # SEARCH + ANSWER
