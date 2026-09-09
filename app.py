@@ -64,6 +64,17 @@ st.markdown(
 
     .stApp {
         background: linear-gradient(180deg, #f7f9fc 0%, #eef2f8 100%);
+        color: var(--navy-800);
+    }
+
+    /* Force readable default text color across the main content area
+       (fixes faded/invisible text from the base dark theme bleeding through) */
+    .stApp h1, .stApp h2, .stApp h3, .stApp h4, .stApp h5, .stApp h6 {
+        color: var(--navy-900) !important;
+    }
+    .stApp p, .stApp span, .stApp label, .stApp li,
+    .stApp .stMarkdown, .stApp .stMarkdown * {
+        color: var(--navy-800);
     }
 
     /* ---------- Hero header ---------- */
@@ -85,14 +96,14 @@ st.markdown(
         border-radius: 50%;
     }
     .hero-title {
-        color: #fff;
+        color: #fff !important;
         font-size: 36px;
         font-weight: 800;
         margin: 0;
         letter-spacing: -0.5px;
     }
     .hero-subtitle {
-        color: #c6d3ea;
+        color: #c6d3ea !important;
         font-size: 15.5px;
         margin-top: 8px;
         font-weight: 400;
@@ -100,7 +111,7 @@ st.markdown(
     .hero-badge {
         display: inline-block;
         background: rgba(212,175,55,0.15);
-        color: var(--gold);
+        color: var(--gold) !important;
         border: 1px solid rgba(212,175,55,0.4);
         padding: 4px 12px;
         border-radius: 999px;
@@ -164,7 +175,7 @@ st.markdown(
     /* ---------- Buttons ---------- */
     div.stButton > button {
         background: linear-gradient(120deg, var(--navy-600), var(--accent));
-        color: #fff;
+        color: #fff !important;
         border: none;
         border-radius: 10px;
         padding: 10px 18px;
@@ -176,6 +187,11 @@ st.markdown(
     div.stButton > button:hover {
         transform: translateY(-1px);
         box-shadow: 0 6px 18px rgba(45,91,163,0.45);
+    }
+    div.stButton > button p,
+    div.stButton > button span,
+    div.stButton > button div {
+        color: #fff !important;
     }
 
     /* ---------- File uploader ---------- */
@@ -217,6 +233,33 @@ st.markdown(
         border-radius: 12px;
         padding: 14px 10px;
         box-shadow: 0 3px 10px rgba(10,26,60,0.05);
+    }
+    div[data-testid="stMetricLabel"],
+    div[data-testid="stMetricLabel"] * {
+        color: var(--navy-700) !important;
+        opacity: 1 !important;
+    }
+    div[data-testid="stMetricValue"],
+    div[data-testid="stMetricValue"] * {
+        color: var(--navy-900) !important;
+        opacity: 1 !important;
+    }
+
+    /* ---------- Text input ---------- */
+    div[data-testid="stTextInput"] input {
+        background: #ffffff !important;
+        color: var(--navy-800) !important;
+        border: 1px solid #d6dfec !important;
+        border-radius: 10px !important;
+    }
+    div[data-testid="stTextInput"] input::placeholder {
+        color: var(--text-soft) !important;
+        opacity: 1 !important;
+    }
+    div[data-testid="stTextInput"] label,
+    div[data-testid="stTextInput"] label * {
+        color: var(--navy-700) !important;
+        opacity: 1 !important;
     }
 
     /* ---------- Misc ---------- */
